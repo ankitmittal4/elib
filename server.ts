@@ -1,7 +1,12 @@
-console.log("Welocme to elib")
-console.log("Welocme to elib")
-console.log("Welocme to elib")
+import { config } from "./src/config/config";
+import app from "./src/app";
 
-function test(){
-    console.log("Sd")
+const startServer = () => {
+    const port = config.port || 3000;
+
+    app.listen(port, () => {
+        console.log(`Listening on port: ${port}`)
+    })
 }
+
+startServer()
