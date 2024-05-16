@@ -51,7 +51,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       algorithm: "HS256",
     });
 
-    res.json({
+    res.status(201).json({
       accessToken: token,
     });
   } catch (error) {
@@ -59,8 +59,35 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-// const loginUser = (req: Request, res: Response, next: NextFunction) => {
-//     const {email, password} =
-// }
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(createHttpError(401, "All fields are required"));
+  }
 
-export { createUser };
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return next(createHttpError(400, "User with this email not exists"));
+  }
+
+  //check password
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) {
+    return next(createHttpError(400, "Incorrect Password"));
+  }
+
+  try {
+    const token = sign({ sub: user._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+      algorithm: "HS256",
+    });
+
+    res.status(201).json({
+      accessToken: token,
+    });
+  } catch (error) {
+    return next(createHttpError(500, "Error while signing jwt token"));
+  }
+};
+
+export { createUser, loginUser };
