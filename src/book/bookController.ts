@@ -155,4 +155,30 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   res.status(201).json({ updatedBook });
 };
 
-export { createBook, updateBook };
+const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    //do pagination
+    const book = await bookModel.find();
+    return res.json(book);
+  } catch (error) {
+    return next(createHttpError(401, "List cannot be fetched"));
+  }
+};
+
+const getSingleBook = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const bookId = req.params.bookId;
+  try {
+    const book = await bookModel.findOne({ _id: bookId });
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
+    return res.json(book);
+  } catch (error) {
+    return next(createHttpError(500, "Error while fetching book"));
+  }
+};
+export { createBook, updateBook, listBooks, getSingleBook };
