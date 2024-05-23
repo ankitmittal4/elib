@@ -6,11 +6,14 @@ import { Express } from "express";
 import createHttpError from "http-errors";
 import bookModel from "./bookModel";
 import fs from "node:fs";
+import { AuthRequest } from "../middlewares/authenticate";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
   // console.log("Files: ", req.files);
   try {
     const { title, genre } = req.body;
+    //@ts-ignore
+    console.log("userId: ", req.userId);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
@@ -50,18 +53,19 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       }
     );
 
-    console.log("coverImageUploadResult: ", coverImageUploadResult);
-    console.log("bookFileUploadResult: ", bookFileUploadResult);
+    // console.log("coverImageUploadResult: ", coverImageUploadResult);
+    // console.log("bookFileUploadResult: ", bookFileUploadResult);
     let newBook;
+    const _req = req as AuthRequest;
     try {
       newBook = await bookModel.create({
         title,
         genre,
-        author: "664627fe7d73409cb7edcb9d",
+        author: _req.userId,
         coverImage: coverImageUploadResult.secure_url,
         file: bookFileUploadResult.secure_url,
       });
-      console.log("New Book: ", newBook);
+      // console.log("New Book: ", newBook);
     } catch (error) {
       return next(createHttpError(401, "Error while creating book"));
     }
